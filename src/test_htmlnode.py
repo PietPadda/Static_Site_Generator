@@ -1,7 +1,7 @@
 import unittest  # our unit testing lib :)
 # CRITICAL: methods & filename must start with "test_" to be discoverable by "unittest"
 
-from htmlnode import HTMLNode  # import modules
+from htmlnode import HTMLNode, LeafNode  # import modules
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -26,6 +26,23 @@ class TestHTMLNode(unittest.TestCase):
     def test_has_no_children(self):
         node = HTMLNode("a", "paragraph text", None, {"href": "https://www.google.com"})
         self.assertNotEqual(node.value, None)  # check if value=None ie has children
+
+    # to_html test: with a given tag and value, Leafnodes with to_html should print correctly!
+    def test_leaf_to_html_p(self):
+        node = LeafNode("p", "Hello, world!")  # tag & value input
+        self.assertEqual(node.to_html(), "<p>Hello, world!</p>")  # returns string
+
+    # to_html: LeafNode children test (no Value)
+    def test_leaf_children(self):
+        node = LeafNode("a", None)  # value = None
+        # Using context manager to check exception ("with")
+        with self.assertRaises(ValueError):  # ValueError!
+            node.to_html()  # when called on cnode
+        
+    # to_html: no tag returns raw value
+    def test_leaf_no_tag(self):
+        node = LeafNode(None, "Hello, world!")  # tag = None
+        self.assertEqual(node.to_html(), "Hello, world!")  # raw value string
 
 
 if __name__ == "__main__":
