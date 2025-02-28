@@ -37,7 +37,7 @@ class HTMLNode:
         print(f"Tag: {self.tag}\nValue: {self.value}\nChildren: {self.children}\nProps: {self.props}")
 
 
-# child class of HTMLNode
+# child class of HTMLNode, "leaf"
 # represent single HTML tag with no children ie has a value
 # no children, don't init children, set super=None
 # props not required, set default=None
@@ -59,6 +59,44 @@ class LeafNode(HTMLNode):
         # {self.props_to_html()}>=  " href="https://www.google.com>
         # {self.value} = Click me!
         # </{self.tag}>" = </a>"
+
+
+# child class of HTMLNode, "parent"
+# handles nesting of HTML nodes inside one another ie has children, has NO value
+# has children, ag and children are not optional
+# doesn't take a value, props are optional
+# exact OPPOSITE of LeafNode
+class ParentNode(HTMLNode):
+    def __init__ (self, tag, children, props=None):  # we don't add value so don't include, props not "required" so def=None
+        super().__init__(tag=tag, value=None, children=children, props=props)  # inherit from parent (set value=value to allow positional ordering)
+    
+    # recursion to print html tag of node & children, returns str
+    def to_html(self):  # no args here except self
+        if self.tag == None:  # if no tag
+            raise ValueError("All parent nodes must have a tag!")  # raise error
+        if self.children == None:  # if there's no child
+            raise ValueError("All parent nodes must have a child!")  # raise error
+        # otherwise, render HTML tag of node and children
+        # recursive, each time called on a nested child node
+        # use for loop to get the children (recursion happens in calling the func on each child)
+        children_html = ""  # init our starting string
+        for child in self.children:  # our children loop... to get each child
+            children_html += child.to_html()  # RECURSIVE STEP! 
+
+
+        # Return parent tag wrapped around children's HTML
+        return f"<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>"  # func we made in HTMLNode
+        
+        # sample output: 
+# <p>
+#   <b>Bold text</b>
+#   Normal text
+#   <i>italic text</i>
+#   Normal text
+# </p>
+        # f"<{self.tag}{self.props_to_html()}> == <p> --> parent tag + props (optional, sample is None)
+        # {children_html} == <b>Bold text</b>Normal text<i>italic text</i>Normal text --> all child HTML content
+        # </{self.tag}>" == </p> --> final parent tag (no props here... props only appear at start of tag, not end)
 
 
 
