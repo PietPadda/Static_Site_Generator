@@ -1,7 +1,9 @@
 import unittest  # our unit testing lib :)
 # CRITICAL: methods & filename must start with "test_" to be discoverable by "unittest"
 
-from htmlnode import HTMLNode, LeafNode, ParentNode  # import modules
+from htmlnode import (HTMLNode,
+                      LeafNode,
+                      ParentNode)  # import modules
 
 
 class TestHTMLNode(unittest.TestCase):

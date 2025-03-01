@@ -82,6 +82,7 @@ class ParentNode(HTMLNode):
         children_html = ""  # init our starting string
         for child in self.children:  # our children loop... to get each child
             children_html += child.to_html()  # RECURSIVE STEP! 
+        # this adds the str to ALL parents, only leaf nodes are not recursed
 
 
         # Return parent tag wrapped around children's HTML
@@ -95,7 +96,7 @@ class ParentNode(HTMLNode):
 #   Normal text
 # </p>
         # f"<{self.tag}{self.props_to_html()}> == <p> --> parent tag + props (optional, sample is None)
-        # {children_html} == <b>Bold text</b>Normal text<i>italic text</i>Normal text --> all child HTML content
+        # {children_html} == <b>Bold text</b>Normal text<i>italic text</i>Normal text --> all child HTML content, recursively generated
         # </{self.tag}>" == </p> --> final parent tag (no props here... props only appear at start of tag, not end)
 
 
