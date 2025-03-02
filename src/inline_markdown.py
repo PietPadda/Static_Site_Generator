@@ -1,3 +1,4 @@
+import re  # RegEx module
 from textnode import TextType, TextNode
 
 # takes 3:
@@ -99,9 +100,34 @@ def parse_compound_part(text, start):
         after = text[url_end + 1:]  # Text after the compound part
         return before, delimited_text, after
 
-# TEST CODE:
-"""test_node = [TextNode("This is text with a `code block` word", TextType.TEXT)]
-test_delimiter = "`"
-test_text_type = TextType.CODE
-test_new_node = split_nodes_delimiter(test_node, test_delimiter, test_text_type)
-print(test_new_node)"""
+
+# ReGex Notes:
+# If no capture groups, returns a list of strings.
+# exactly one capture group, it returns a list of strings
+# multiple capture groups, it returns a list of tuples
+
+# ReGex Image handling
+def extract_markdown_images(text):  # input text, output tuples each (alt text, img url)
+    matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches  # tuples of alt text, img url
+# r" ", text -- regex on text
+# !\[ \] -- alt text escapes, ! is literal (! to differentiate from links!)
+# \( \)  -- url link escapes
+# ( ) -- capture group
+# .*? -- all chars between --> works, but doesn't handled nested [] or ()! replace with...
+# [^\[\]]* -- da bomb! breakdown below
+# [ --  character class, let's you specify which chars can appear
+# ^ -- means NOT, so this class will match any EXCEPT the ones listed after
+# \[ -- an escape for the literal [, without \ it's a char class!
+# \] -- an escape for the literal ]
+# ] -- closes char class definition
+# * -- zero or more, in this case, match zero or more that are NOT [ or ]
+# [^\(\)]* -- same, just ()s!
+
+
+# ReGex Links handling
+def extract_markdown_links(text):  # input text, output tuples each (anchor text, url link)
+    matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches  # tuples of anchor text, url link
+# (?<!...) -- negative look behind, only match if the ... char is not there!
+# ... = ! --- the 2nd ! is the char, so if ![ is there, it's NOT a link but an IMAGE!
