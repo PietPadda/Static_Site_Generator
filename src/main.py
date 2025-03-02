@@ -9,6 +9,7 @@ def main():
     # Must use Enum for bold, as simply "bold" won't work
     print(dummy_object)
 
+
 # Need this to run!
 if __name__ == "__main__":
     main()

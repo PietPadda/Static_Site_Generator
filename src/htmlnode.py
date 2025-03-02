@@ -98,6 +98,3 @@ class ParentNode(HTMLNode):
         # f"<{self.tag}{self.props_to_html()}> == <p> --> parent tag + props (optional, sample is None)
         # {children_html} == <b>Bold text</b>Normal text<i>italic text</i>Normal text --> all child HTML content, recursively generated
         # </{self.tag}>" == </p> --> final parent tag (no props here... props only appear at start of tag, not end)
-
-
-
