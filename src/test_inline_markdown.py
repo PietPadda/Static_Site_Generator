@@ -5,7 +5,9 @@ from textnode import (TextNode,
                       TextType)  # import modules
 from inline_markdown import (split_nodes_delimiter,
                              extract_markdown_images,
-                             extract_markdown_links)  # import modules
+                             extract_markdown_links,
+                             split_nodes_image,
+                             split_nodes_link)  # import modules
 
 
 class TestTextNode(unittest.TestCase):
@@ -110,6 +112,136 @@ class TestTextNode(unittest.TestCase):
         links = extract_markdown_links(text)   # for this input
         self.assertListEqual([("text", "https://example.com")], links)  # Should only match the complete one
 
+
+    # Split Inline Textnodes IMAGE & LINK
+    # Test Image Split
+    def test_split_images(self):
+        node = TextNode(  # sample text node with images in it
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])  # use our split func
+        self.assertListEqual(  # verify they're equal
+            [
+                TextNode("This is text with an ", TextType.TEXT),  # text before image
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),  # first image
+                TextNode(" and another ", TextType.TEXT),  # text after first image
+                TextNode("second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"  # second and final image
+                ),
+            ],
+            new_nodes,  # our input to compare (see if split is equal to this assertion)
+        )
+
+    # Test Link Split
+    def test_split_links(self):
+        node = TextNode(  # sample text node with links in it
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])  # use our split func
+        self.assertListEqual(  # verify they're equal
+            [
+                TextNode("This is text with a link ", TextType.TEXT),  # text before link
+                TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),  # first link
+                TextNode(" and ", TextType.TEXT),  # text after first link
+                TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"  # second and final link
+                ),
+            ],
+            new_nodes,  # our input to compare (see if split is equal to this assertion)
+        )
+
+   # Test Image & Link Split
+    def test_split_images_and_links(self):
+        node = TextNode(  # sample text node with image & link in it
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and a link [to youtube](https://www.youtube.com/@bootdotdev)",
+            TextType.TEXT,
+        )
+        new_nodes1 = split_nodes_image([node])  # use our split func for images first (NOTE: NODE AS LIST)
+        new_nodes2 = split_nodes_link(new_nodes1)  # use our split func for links second (NOTE: Already list... just pass it directly)
+        self.assertListEqual(  # verify they're equal
+            [
+                TextNode("This is text with an ", TextType.TEXT),  # text before image
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),  # first image
+                TextNode(" and a link ", TextType.TEXT),  # text after first image
+                TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"  # first and final link
+                ),
+            ],
+            new_nodes2,  # our input to compare (see if split is equal to this assertion)
+        )
+
+   # Test Image & Link Split -- multiple nodes
+    def test_plit_images_and_links_multiple_nodes(self):
+        node1 = TextNode("Text with ![image](https://example.com/img.png)", TextType.TEXT)  # image node
+        node2 = TextNode("More text with [link](https://example.com)", TextType.TEXT)  # link node
+        
+        # Test image splitting on multiple nodes
+        result_images = split_nodes_image([node1, node2])  # input both
+        self.assertListEqual(
+            [
+                TextNode("Text with ", TextType.TEXT),  # split text bore
+                TextNode("image", TextType.IMAGE, "https://example.com/img.png"),  # get image
+                node2  # just return directly
+            ],
+            result_images  # func call on nodes
+        )
+        
+        # Test link splitting on multiple nodes
+        result_links = split_nodes_link([node1, node2])
+        self.assertListEqual(
+            [
+                node1,  # This node should be unchanged since it doesn't contain links
+                TextNode("More text with ", TextType.TEXT),  # split text bore
+                TextNode("link", TextType.LINK, "https://example.com")  # get link
+            ],
+            result_links  # func call on nodes
+        )
+        
+        # Test both in sequence (first images, then links)
+        intermediate_result = split_nodes_image([node1, node2])  # split image first
+        final_result = split_nodes_link(intermediate_result)  # then split link on it
+        self.assertListEqual(
+            [
+                TextNode("Text with ", TextType.TEXT),  # get text before img
+                TextNode("image", TextType.IMAGE, "https://example.com/img.png"),  # get img
+                TextNode("More text with ", TextType.TEXT),  # get text after img (incl link... call link will process this to split)
+                TextNode("link", TextType.LINK, "https://example.com")  # get link
+            ],
+            final_result  # img func call on nodes then link func call
+        )
+
+   # Test Image & Link Split with invalid type
+    def test_split_images_and_links_with_invalid_type(self):
+        node = TextNode(  # sample text node with image & link in it... invalid type
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and a link [to youtube](https://www.youtube.com/@bootdotdev)",
+            "Chunky",  # "CHUNKY" ie invalid
+        )
+        # Using context manager to check exception ("with")
+        with self.assertRaises(ValueError):  # ValueError!
+            split_nodes_image([node])  # This should raise ValueError due to invalid type
+        with self.assertRaises(ValueError):  # ValueError!
+            split_nodes_link([node])  # This should raise ValueError due to invalid type
+
+    # Test Image & Link Split with empty node
+    def test_split_images_and_links_empty_text_nodes(self):
+        node = TextNode("", TextType.TEXT)  # empty text
+        self.assertListEqual([node], split_nodes_image([node]))  # just return directly
+        self.assertListEqual([node], split_nodes_link([node]))  # just return directly
+
+    # Test Image & Link Split with text only
+    def test_split_images_and_links_no_matches(self):
+        node = TextNode("This is just plain text with no images or links", TextType.TEXT)  # simple text
+        self.assertListEqual([node], split_nodes_image([node]))  # just return directly
+        self.assertListEqual([node], split_nodes_link([node]))  # just return directly
+
+    # Test Image & Link Split with incorrect syntax
+    def test_split_images_and_links_malformed_markdown(self):
+        # Incomplete image markdown
+        node1 = TextNode("This has a ![broken image](", TextType.TEXT)  # broken image sytnax
+        self.assertListEqual([node1], split_nodes_image([node1]))  # just return directly
+        
+        # Incomplete link markdown
+        node2 = TextNode("This has a [broken link](", TextType.TEXT)  # broken link sytnax
+        self.assertListEqual([node2], split_nodes_link([node2]))  # just return directly
 
 if __name__ == "__main__":
     unittest.main()

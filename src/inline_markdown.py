@@ -103,7 +103,7 @@ def parse_compound_part(text, start):
 
 # ReGex Notes:
 # If no capture groups, returns a list of strings.
-# exactly one capture group, it returns a list of strings
+# exactly one capture group, it returns a list of strings (even if only one matches, if text has multiple, you get a list of tuples!)
 # multiple capture groups, it returns a list of tuples
 
 # ReGex Image handling
@@ -131,3 +131,92 @@ def extract_markdown_links(text):  # input text, output tuples each (anchor text
     return matches  # tuples of anchor text, url link
 # (?<!...) -- negative look behind, only match if the ... char is not there!
 # ... = ! --- the 2nd ! is the char, so if ![ is there, it's NOT a link but an IMAGE!
+
+# Split nodes for IMAGES
+def split_nodes_image(old_nodes):
+    new_nodes = []  # init empty list
+
+    for node in old_nodes:  # loop through old list
+        # Handle unavailable node types
+        if not isinstance(node.text_type, TextType):  # check invalid TextType (not in enum list)
+            raise ValueError("Invalid Markdown Syntax! TextType Not Handled!")  # raise exception
+
+        # Handle modes of non-TEXT that aren't delimited (no nesting allowed)
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)  # add straight as a node
+            continue  # skip following if/else etc as it is TEXT and do next loop
+
+        images = extract_markdown_images(node.text)  # get images extracted from the node
+        if not images:  # if it's an empty list ie no images
+            new_nodes.append(node)  # add straight as a node
+        else:
+            current_text = node.text  # init our text to use in loop
+            for alt_text, img_url in images:  # loop through images list
+                # Split our text by the image, maxsplit 1 to get the first text
+                image_split = f"![{alt_text}]({img_url})"  # we set our image text to split
+                text_parts = current_text.split(image_split, 1)  # we split the text using above text, maxsplit = 1
+
+                # If there is a text_part 1... set as text, else it's immediately image!
+                if text_parts[0]:  # if text before image
+                    new_nodes.append(TextNode(text_parts[0], TextType.TEXT))  # we add as text
+
+                # Textnode Syntax: def __init__(self, text, text_type, url=None):
+                # We know that first text bit is there now, so we can safely add the image text as node
+                new_nodes.append(TextNode(alt_text, TextType.IMAGE, img_url))  # we add our image node extracted
+
+                # There may be remaining text AFTER
+                if len(text_parts) >= 2:  # if there definitely is (not just first text and image)
+                    current_text = text_parts[1]  # we use the text after... and will check for more images again in loop!
+                else:
+                    current_text = ""  # otherwise we just return empty for current and break the loop!
+                    break  # No more text to process, so exit the loop
+
+            # let's add any remaining text now that loop is broken and no more images are left
+            if current_text:  # if there is text left and not images
+                new_nodes.append(TextNode(current_text, TextType.TEXT))  # we add as text node!
+    return new_nodes  # return our nodes split as TEXT, IMAGE, TEXT, IMAGE etc.
+
+
+# Split nodes for LINKS
+def split_nodes_link(old_nodes):
+    new_nodes = []  # init empty list
+
+    for node in old_nodes:  # loop through old list
+        # Handle unavailable node types
+        if not isinstance(node.text_type, TextType):  # check invalid TextType (not in enum list)
+            raise ValueError("Invalid Markdown Syntax! TextType Not Handled!")  # raise exception
+
+        # Handle modes of non-TEXT that aren't delimited (no nesting allowed)
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)  # add straight as a node
+            continue  # skip following if/else etc as it is TEXT and do next loop
+
+        links = extract_markdown_links(node.text)  # get LINKS extracted from the node
+        if not links:  # if it's an empty list ie no links
+            new_nodes.append(node)  # add straight as a node
+        else:
+            current_text = node.text  # init our text to use in loop
+            for anchor_text, link_url in links:  # loop through LINKS list
+                # Split our text by the link, maxsplit 1 to get the first text
+                link_split = f"[{anchor_text}]({link_url})"  # we set our LINK text to split
+                text_parts = current_text.split(link_split, 1)  # we split the text using above text, maxsplit = 1
+
+                # If there is a text_part 1... set as text, else it's immediately LINK!
+                if text_parts[0]:  # if text before LINK
+                    new_nodes.append(TextNode(text_parts[0], TextType.TEXT))  # we add as text
+
+                # Textnode Syntax: def __init__(self, text, text_type, url=None):
+                # We know that first text bit is there now, so we can safely add the LINK text as node
+                new_nodes.append(TextNode(anchor_text, TextType.LINK, link_url))  # we add our LINK node extracted
+
+                # There may be remaining text AFTER
+                if len(text_parts) >= 2:  # if there definitely is (not just first text and LINK)
+                    current_text = text_parts[1]  # we use the text after... and will check for more LINKS again in loop!
+                else:
+                    current_text = ""  # otherwise we just return empty for current and break the loop!
+                    break  # No more text to process, so exit the loop
+
+            # let's add any remaining text now that loop is broken and no more LINKS are left
+            if current_text:  # if there is text left and not images
+                new_nodes.append(TextNode(current_text, TextType.TEXT))  # we add as text node!
+    return new_nodes  # return our nodes split as TEXT, LINK, TEXT, LINK etc.
