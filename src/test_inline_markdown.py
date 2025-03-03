@@ -7,7 +7,8 @@ from inline_markdown import (split_nodes_delimiter,
                              extract_markdown_images,
                              extract_markdown_links,
                              split_nodes_image,
-                             split_nodes_link)  # import modules
+                             split_nodes_link,
+                             text_to_textnodes)  # import modules
 
 
 class TestTextNode(unittest.TestCase):
@@ -242,6 +243,55 @@ class TestTextNode(unittest.TestCase):
         # Incomplete link markdown
         node2 = TextNode("This has a [broken link](", TextType.TEXT)  # broken link sytnax
         self.assertListEqual([node2], split_nodes_link([node2]))  # just return directly
+
+    # Our "beast" combined splitter, all 3 at once!
+    # Combined text splitter -- normal use
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        old_nodes = text_to_textnodes(text)  # we call the beast!
+
+        # we expect the result to be
+        new_nodes = [
+        TextNode("This is ", TextType.TEXT),
+        TextNode("text", TextType.BOLD),
+        TextNode(" with an ", TextType.TEXT),
+        TextNode("italic", TextType.ITALIC),
+        TextNode(" word and a ", TextType.TEXT),
+        TextNode("code block", TextType.CODE),
+        TextNode(" and an ", TextType.TEXT),
+        TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+        TextNode(" and a ", TextType.TEXT),
+        TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+
+        # Assert that the actual result matches the expected result
+        self.assertListEqual(new_nodes, old_nodes)
+
+    # Combined text splitter -- text only
+    def test_text_to_textnodes_text_only(self):
+        text = "This is text with an italic word and a code block and an obi wan image https://i.imgur.com/fJRm4Vk.jpeg and a link https://boot.dev"
+        old_nodes = text_to_textnodes(text)  # we call the beast!
+
+        # we expect the result to be
+        new_nodes = [
+        TextNode("This is text with an italic word and a code block and an obi wan image https://i.imgur.com/fJRm4Vk.jpeg and a link https://boot.dev", TextType.TEXT),
+        ]
+
+        # Assert that the actual result matches the expected result
+        self.assertListEqual(new_nodes, old_nodes)
+
+    # Combined text splitter -- empty
+    def test_text_to_textnodes_text_only(self):
+        text = ""
+        old_nodes = text_to_textnodes(text)  # we call the beast!
+
+        # we expect the result to be
+        new_nodes = []
+
+        # Assert that the actual result matches the expected result
+        self.assertListEqual(new_nodes, old_nodes)
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -220,3 +220,23 @@ def split_nodes_link(old_nodes):
             if current_text:  # if there is text left and not images
                 new_nodes.append(TextNode(current_text, TextType.TEXT))  # we add as text node!
     return new_nodes  # return our nodes split as TEXT, LINK, TEXT, LINK etc.
+
+
+# Combining all our splitting funcs, the inline markdown "beast"!
+# just conv text to "nodes" then run it successively on the same to continue processed it!
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]  # first create our LIST node
+
+    # Now let's apply each type of simple inline markdown
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)  # simple inline bold
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)  # then simple inline italic
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)  # finally simple inline code
+
+    # Now let's apply more complex img & link inline markdown
+    nodes = split_nodes_image(nodes)  # image inline splitter
+    nodes = split_nodes_link(nodes)  # finally link inline splitter
+    return nodes
+
+
+sample_text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+print(text_to_textnodes(sample_text))
