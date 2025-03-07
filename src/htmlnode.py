@@ -7,9 +7,9 @@ class HTMLNode:
         self.children = children  # list of HTMLNode objs for children of this node
         self.props = props  # dict key:value pairs of attributes of HTML tag (eg <a> may have {"href": "https://www.google.com"})
 
-    # just raises error --> children will override to render as HTML
+    """# just raises error --> children will override to render as HTML
     def to_html(self):
-        raise NotImplementedError
+        raise NotImplementedError"""
     
     # returns str of HTML attributes for node
     def props_to_html(self):  # only self, no props!
