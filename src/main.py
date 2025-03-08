@@ -1,13 +1,7 @@
-from textnode import TextNode  # import our object
-from textnode import TextType  # import the TextType Enum
-
-print("hello world")
+from file_utils import copy_static
 
 def main():
-    # create dummy object
-    dummy_object = TextNode("this is a text node", TextType.BOLD, "https://www.boot.dev")
-    # Must use Enum for bold, as simply "bold" won't work
-    print(dummy_object)
+    copy_static(source="static", destination="public")
 
 
 # Need this to run!
