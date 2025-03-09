@@ -30,7 +30,7 @@ def extract_title(markdown):
 # use extract_tilte to grab the page title
 # replace {{ Title }} and {{ Content }} w HTML and title generated
 # write FULL HTML page to dest_path -- new folders required to be made
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")  # our busy message
 
     # GETTING TITLE & CONTENT
@@ -48,6 +48,13 @@ def generate_page(from_path, template_path, dest_path):
     output_html = template.replace("{{ Title }}", title)  # insert our title to template
     output_html = output_html.replace("{{ Content }}", content)  # insert our content to template
 
+    # BASEPATH REPLACE:
+    output_html = template.replace('href="/', f'href="{basepath}/')  # url navigation link (Hypertext REFerence)
+    output_html = template.replace('src="/', f'src="{basepath}/')  # elements to load (SouRCe)
+    # "/" just means to start at root of website... that's our default
+    # BASEPATH is var to store roof of website ("/" good for local, Github prefers "/repo-name/")
+
+
     # FULL PAGE CREATION
      # create distination folders including subfolders!
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)  # exist_ok is builtin flag to check if already existing
@@ -59,7 +66,7 @@ def generate_page(from_path, template_path, dest_path):
 # for each md, make new .html usin template.html
 # all pages written to public dir using same dir structure
 # EXACT structure as copy_static, but need to process different filetypes in for loop's else!
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     static_items = os.listdir(dir_path_content)  # list of file paths in content folder
 
     # loop each file AND subfolder in "static"
@@ -71,7 +78,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             print(f"Debug: {destination_path} is a folder, recurse")
             # use makedirs (to include subfolders) with exist_ok=True to only make folder if not existing
             os.makedirs(destination_path, exist_ok=True)  # create folder & subfolders in public
-            generate_pages_recursive(source_path, template_path, destination_path)  # recurse folder UNTIL we reach files
+            generate_pages_recursive(source_path, template_path, destination_path, basepath)  # recurse folder UNTIL we reach files
         # otherwise it's a file AND ONLY IF IT'S MARKDOWN!
         else:
             if item == "index.md":  # if it's markdown index file eg index.md
@@ -79,6 +86,6 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 # take destination path and add on index.html
                 # this renames it to the correct filetype!
                 html_destination = os.path.join(os.path.dirname(destination_path), "index.html")
-                generate_page(source_path, template_path, html_destination)  # generate the page
+                generate_page(source_path, template_path, html_destination, basepath)  # generate the page
             else:  # if it's not index.md
                 print(f"Debug: {source_path} is not an index.md, skipping")
