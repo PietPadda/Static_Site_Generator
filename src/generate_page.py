@@ -81,7 +81,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
             generate_pages_recursive(source_path, template_path, destination_path, basepath)  # recurse folder UNTIL we reach files
         # otherwise it's a file AND ONLY IF IT'S MARKDOWN!
         else:
-            if item == "index.md":  # if it's markdown index file eg index.md
+            if item.endswith(".md"):  # if it's markdown index file eg index.md
                 print(f"Debug: {source_path} is an index.md, generate HTML page")
                 # take destination path and add on index.html
                 # this renames it to the correct filetype!
