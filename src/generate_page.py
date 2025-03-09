@@ -64,7 +64,7 @@ def generate_page(from_path, template_path, dest_path, basepath):
 
 # crawl every entry in content dir
 # for each md, make new .html usin template.html
-# all pages written to public dir using same dir structure
+# all pages written to DOCS dir using same dir structure
 # EXACT structure as copy_static, but need to process different filetypes in for loop's else!
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     static_items = os.listdir(dir_path_content)  # list of file paths in content folder
@@ -72,12 +72,12 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
     # loop each file AND subfolder in "static"
     for item in static_items:
         source_path = os.path.join(dir_path_content, item)  # static content item path
-        destination_path = os.path.join(dest_dir_path, item)  # public html item path
+        destination_path = os.path.join(dest_dir_path, item)  # DOCS html item path
         # if a folder (not a file)
         if os.path.isdir(source_path):
             print(f"Debug: {destination_path} is a folder, recurse")
             # use makedirs (to include subfolders) with exist_ok=True to only make folder if not existing
-            os.makedirs(destination_path, exist_ok=True)  # create folder & subfolders in public
+            os.makedirs(destination_path, exist_ok=True)  # create folder & subfolders in DOCS
             generate_pages_recursive(source_path, template_path, destination_path, basepath)  # recurse folder UNTIL we reach files
         # otherwise it's a file AND ONLY IF IT'S MARKDOWN!
         else:
