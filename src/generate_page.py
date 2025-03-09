@@ -49,8 +49,8 @@ def generate_page(from_path, template_path, dest_path, basepath):
     output_html = output_html.replace("{{ Content }}", content)  # insert our content to template
 
     # BASEPATH REPLACE:
-    output_html = template.replace('href="/', f'href="{basepath}/')  # url navigation link (Hypertext REFerence)
-    output_html = template.replace('src="/', f'src="{basepath}/')  # elements to load (SouRCe)
+    output_html = output_html.replace('href="/', f'href="{basepath}/')  # url navigation link (Hypertext REFerence)
+    output_html = output_html.replace('src="/', f'src="{basepath}/')  # elements to load (SouRCe)
     # "/" just means to start at root of website... that's our default
     # BASEPATH is var to store roof of website ("/" good for local, Github prefers "/repo-name/")
 
