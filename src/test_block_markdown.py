@@ -6,7 +6,7 @@ from blocktype import (BlockType,
                        block_to_block_type)  # import modules
 
 
-class TestBlockNode(unittest.TestCase):
+class TestBlockMarkdown(unittest.TestCase):
     # BLOCK SPLIT TESTING
     # simple test to see if it works
     def test_markdown_to_blocks(self):

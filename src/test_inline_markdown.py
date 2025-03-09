@@ -11,7 +11,7 @@ from inline_markdown import (split_nodes_delimiter,
                              text_to_textnodes)  # import modules
 
 
-class TestTextNode(unittest.TestCase):
+class TestInlineMarkdown(unittest.TestCase):
     # Old TextNode Splitter Unit Tests -- simple inline markdown (bold, italic etc)
     # OldNode with Bold delimeter, TEXT Type
     def test_node_splitter_text_with_code(self):
