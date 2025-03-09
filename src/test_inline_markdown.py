@@ -45,7 +45,7 @@ class TestInlineMarkdown(unittest.TestCase):
         self.assertEqual(new_node, [TextNode("This is a bold textnode", TextType.BOLD)])  # no change, the same!
     def test_node_splitter_italic_already(self):
         old_node = TextNode("This is an italic textnode", TextType.ITALIC)  # define italic text node
-        new_node = split_nodes_delimiter([old_node], "*", TextType.ITALIC)  # run func on node, ITALIC for "*" delimiter
+        new_node = split_nodes_delimiter([old_node], "_", TextType.ITALIC)  # run func on node, ITALIC for "_" delimiter
         self.assertEqual(new_node, [TextNode("This is an italic textnode", TextType.ITALIC)])  # no change, the same!
 
     # OldNode with INVALID Type

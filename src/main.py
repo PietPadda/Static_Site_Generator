@@ -1,18 +1,18 @@
 from copy_static import copy_static
-from generate_page import generate_page
+from generate_page import generate_pages_recursive
 
 def main():
     # Delete last public and copy static files over to new public folder
     copy_static(source="static", destination="public")
 
-    # Generate index.html page!
-    # args: from_path, template_path, dest_path
-    from_path = "content/index.md"  # our input md
+    # Generate index.html pages!
+    # args: dir_path_content, template_path, dest_dir_path
+    content_dir = "content"  # our content folder with mds
     template_path = "template.html"  # our input template html
-    dest_path = "public/index.html"  # our output html
-    generate_page(from_path=from_path,
+    public_dir = "public"  # our output folder with htmls
+    generate_pages_recursive(dir_path_content=content_dir,
                   template_path=template_path,
-                  dest_path=dest_path)
+                  dest_dir_path=public_dir)
 
 
 # Need this to run!

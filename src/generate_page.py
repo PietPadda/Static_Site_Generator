@@ -1,5 +1,6 @@
 import re  # Regex import
 import os  # for filemanagement
+import shutil  # for file copying
 
 from block_to_html import markdown_to_html_node  # import module
 from htmlnode import (LeafNode,
@@ -53,3 +54,31 @@ def generate_page(from_path, template_path, dest_path):
     # write the full htmlpage to  path
     with open(dest_path, "w") as file:  # "w" for write
         file.write(output_html)  # write html page to path!
+
+# crawl every entry in content dir
+# for each md, make new .html usin template.html
+# all pages written to public dir using same dir structure
+# EXACT structure as copy_static, but need to process different filetypes in for loop's else!
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    static_items = os.listdir(dir_path_content)  # list of file paths in content folder
+
+    # loop each file AND subfolder in "static"
+    for item in static_items:
+        source_path = os.path.join(dir_path_content, item)  # static content item path
+        destination_path = os.path.join(dest_dir_path, item)  # public html item path
+        # if a folder (not a file)
+        if os.path.isdir(source_path):
+            print(f"Debug: {destination_path} is a folder, recurse")
+            # use makedirs (to include subfolders) with exist_ok=True to only make folder if not existing
+            os.makedirs(destination_path, exist_ok=True)  # create folder & subfolders in public
+            generate_pages_recursive(source_path, template_path, destination_path)  # recurse folder UNTIL we reach files
+        # otherwise it's a file AND ONLY IF IT'S MARKDOWN!
+        else:
+            if item == "index.md":  # if it's markdown index file eg index.md
+                print(f"Debug: {source_path} is an index.md, generate HTML page")
+                # take destination path and add on index.html
+                # this renames it to the correct filetype!
+                html_destination = os.path.join(os.path.dirname(destination_path), "index.html")
+                generate_page(source_path, template_path, html_destination)  # generate the page
+            else:  # if it's not index.md
+                print(f"Debug: {source_path} is not an index.md, skipping")

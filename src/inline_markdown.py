@@ -9,7 +9,7 @@ from textnode import TextType, TextNode
 # Doesn't allow nested syntax ie bold inside an italic section etc
 # ie ONLY TYPE OF OF DELIMITER PER FUNC CALL!
 
-# Markdown delimeters:
+# Markdown delimiters:
 # TEXT = none
 # BOLD = **
 # ITALIC = _ or single *
@@ -48,27 +48,34 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             else:
                 # split the string into text [0] + delimited [1] + text parts [2]
                 text_split = str_splitter(node.text, delimiter)
-                if len(text_split) % 2 == 0:  # No matching closing delimiter (if only index 0 & 1, we can assume no closing)
-                    raise ValueError(f"No closing '{delimiter}' present in '{node.text}'")  # raises exception
-                index_counter = 0  # init text_split counter
 
-                for text in text_split:  # loop through list of split text
-                    if text:  # check to avoid adding empty strings!
-                        # Normal Text Type (index 0 & 2)
-                        if index_counter % 2 == 0:  # if even ie NOT delimited ie TEXT type
-                            new_nodes.append(TextNode(text, TextType.TEXT))  # add straight as a node as normal text
-                        # Delimted Text Type (index 1)
-                        else:
-                            new_nodes.append(TextNode(text, text_type))  # add delimted text with relevant type
-                        index_counter += 1  # increment counter
+                # Minimal Fix: Iterate using enumerate and remove the incorrect check
+                for i, part in enumerate(text_split):
+                    # enumerate gives us both the index (i) and the value (part) in each loop
+                    # This lets us track position in the list without a separate counter
+
+                    if i % 2 == 0:  # Even indices (0, 2, 4...) are plain text parts
+                        if part:  # Only add if part is NOT empty
+                            # This skips empty strings that might appear between delimiters
+                            new_nodes.append(TextNode(part, TextType.TEXT))
+                    else:  # Odd indices (1, 3, 5...) are the delimited/formatted text
+                        # These are the parts that were between delimiter pairs
+                        # Always add these parts with the specified formatting
+                        new_nodes.append(TextNode(part, text_type))
+
     # after finishing looping through all old nodes, we return our processed and delimited "new nodes"
     return new_nodes
 
 
-# helper func to strip text based on a delimter
+# helper func to strip text based on a delimiter
 def str_splitter(text, delimiter):
-    # Splits the text into sections based on the delimiter
-    return text.split(delimiter)  # split based on delimiter
+    # If it's italic, let's add this
+    if delimiter == "_":
+        parts = re.split(r"_(.+?)_", text)
+        return parts
+    else:
+        # Splits the text into sections based on the delimiter
+        return text.split(delimiter)  # split based on delimiter
 
 # helper func to help LINK & IMAGE with 2 sets of delimimters
 def parse_compound_delimiter(text, delimiter):
